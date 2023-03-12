@@ -25,13 +25,14 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final counterBloc = CounterBloc();
     return MultiBlocProvider(
       providers: [
         BlocProvider<CounterBloc>(
-          create: (context) => CounterBloc(),
+          create: (context) => counterBloc,
         ),
         BlocProvider<UserBloc>(
-          create: (context) => UserBloc(),
+          create: (context) => UserBloc(counterBloc),
         ),
       ],
       child: Builder(builder: (context) {
@@ -42,7 +43,6 @@ class MyHomePage extends StatelessWidget {
               child: Column(
                 children: [
                   BlocBuilder<CounterBloc, int>(
-                    // bloc: counterBloc,
                     builder: (context, state) {
                       final users =
                           context.select((UserBloc bloc) => bloc.state.users);
@@ -59,16 +59,12 @@ class MyHomePage extends StatelessWidget {
                     },
                   ),
                   BlocBuilder<UserBloc, UserState>(
-                    // bloc: userBloc,
                     builder: (context, state) {
-                      final users = state.users;
                       final job = state.job;
                       return Column(
                         children: [
                           if (state.isLoading)
                             const CircularProgressIndicator(),
-                          // if (users.isNotEmpty)
-                          //   ...users.map((e) => Text(e.name)),
                           if (job.isNotEmpty) ...job.map((e) => Text(e.name))
                         ],
                       );
@@ -96,7 +92,7 @@ class MyHomePage extends StatelessWidget {
                 onPressed: () {
                   final userBloc = context.read<UserBloc>();
                   userBloc.add(
-                      UserGetUsersEvent(context.read<CounterBloc>().state));
+                      UserGetUsersEvent(counterBloc.state));
                 },
                 icon: const Icon(Icons.person),
               ),
@@ -104,7 +100,7 @@ class MyHomePage extends StatelessWidget {
                 onPressed: () {
                   final userBloc = context.read<UserBloc>();
                   userBloc.add(
-                      UserGetUsersJobEvent(context.read<CounterBloc>().state));
+                      UserGetUsersJobEvent(counterBloc.state));
                 },
                 icon: const Icon(Icons.work),
               ),
